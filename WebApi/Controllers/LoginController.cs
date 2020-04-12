@@ -18,7 +18,7 @@ namespace WebApplication1.Controllers
     [ApiController]
     public class LoginController : ControllerBase
     {
-        private IConfiguration _config;
+        private IConfiguration _config
 
         public LoginController(IConfiguration config)
         {
