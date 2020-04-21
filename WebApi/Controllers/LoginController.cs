@@ -15,6 +15,7 @@ using WebApplication1.Model;
 namespace WebApplication1.Controllers
 {
     [Route("api/[controller]")]
+    [Produces("application/json")]
     [ApiController]
     public class LoginController : ControllerBase
     {
@@ -38,7 +39,7 @@ namespace WebApplication1.Controllers
             if (user !=null)
             {
                 var tokenStr = GenerateJSONWenToken(user);
-                response = Ok(new { token = tokenStr });
+                response = Ok(new { token = tokenStr, username = "mail", firstName = "PrénomUser", lastName = "NomUser" });
 
             }
             return response;
@@ -68,7 +69,7 @@ namespace WebApplication1.Controllers
 
             if (login.UserName=="toto" && login.Password=="toto")
             {
-                user = new UserModel { UserName = "COUCOU", Email = "ttppt@gmail.com", Password="toto" };
+                user = new UserModel { UserName = "COUCOU@toto.com", Email = "ttppt@gmail.com", Password="toto" };
             }
             return user;
         }
