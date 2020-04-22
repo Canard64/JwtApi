@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +28,35 @@ namespace WebApplication1.Controllers
             _config = config;
         }
 
+
+        [HttpPost("PostLogin")]
+        public async Task<IActionResult> PostLogin()
+        {
+            var bodyStr = "";
+            var req = HttpContext.Request;
+
+            using (StreamReader reader
+          = new StreamReader(req.Body, Encoding.UTF8, true, 1024, true))
+            {
+                bodyStr = await reader.ReadToEndAsync();
+            }
+
+
+            UserModel login = JsonSerializer.Deserialize<UserModel>(bodyStr);
+
+            // UserModel login = new UserModel();
+            IActionResult response = Unauthorized();
+            var user = AuthenticateUser(login);
+
+            if (user != null)
+            {
+                var tokenStr = GenerateJSONWenToken(user);
+                response = Ok(new { token = tokenStr, username = "mail", firstName = "PrénomUser", lastName = "NomUser" });
+
+            }
+            return response;
+
+        }
         [HttpGet]
         public IActionResult Login(String username, String pwd)
         {
@@ -36,13 +67,21 @@ namespace WebApplication1.Controllers
             IActionResult response = Unauthorized();
             var user = AuthenticateUser(login);
 
-            if (user !=null)
+            if (user != null)
             {
                 var tokenStr = GenerateJSONWenToken(user);
                 response = Ok(new { token = tokenStr, username = "mail", firstName = "PrénomUser", lastName = "NomUser" });
 
             }
             return response;
+        }
+
+
+        [HttpGet("GetAllWeather")]
+        public IEnumerable<string> GetAllWeather()
+        {
+
+            return new string[] { "Value1", "Value2", "Value3" };
         }
 
         [Authorize]
@@ -57,8 +96,8 @@ namespace WebApplication1.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetValue")]
-        ActionResult<IEnumerable<string>> Get()
+        [HttpGet("GetAll")]
+        public IEnumerable<string> GetAll()
         {
             return new string[] { "Value1", "Value2", "Value3" };
         }
@@ -67,9 +106,9 @@ namespace WebApplication1.Controllers
         {
             UserModel user = null;
 
-            if (login.UserName=="toto" && login.Password=="toto")
+            if (login.UserName == "a@a" && login.Password == "a")
             {
-                user = new UserModel { UserName = "COUCOU@toto.com", Email = "ttppt@gmail.com", Password="toto" };
+                user = new UserModel { UserName = "COUCOU@toto.com", Email = "ttppt@gmail.com", Password = "toto" };
             }
             return user;
         }
@@ -92,7 +131,7 @@ namespace WebApplication1.Controllers
                 audience: _config["Jwt:Issuer"],
                 claims,
                 expires: DateTime.Now.AddMinutes(120),
-                signingCredentials: credential) ;
+                signingCredentials: credential);
 
             var encodedToken = new JwtSecurityTokenHandler().WriteToken(token);
 
